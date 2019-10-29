@@ -802,10 +802,28 @@ def terminal_size():
     return width, height
 
 
-def main():
-    signal.signal(signal.SIGPIPE, signal.SIG_DFL)
-    signal.signal(signal.SIGINT, signal.SIG_DFL)
+def setup_signals(entry_fn):
+    def entry_wrapper():
+        if sys.platform != 'win32':
+            signal.signal(signal.SIGPIPE, signal.SIG_DFL)
+            signal.signal(signal.SIGINT, signal.SIG_DFL)
+            return entry_fn()
+        else:
+            import errno
+            signal.signal(signal.SIGINT, signal.SIG_DFL)
+            try:
+                rc = entry_fn()
+            except IOError as e:
+                if e.errno == errno.EPIPE or e.errno == errno.EINVAL:
+                    rc = 0
+                else:
+                    raise
+            return rc
+    return entry_wrapper
 
+
+@setup_signals
+def main():
     from optparse import (OptionParser, BadOptionError, AmbiguousOptionError,
                           OptionGroup)
 

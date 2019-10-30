@@ -7,10 +7,11 @@ if [ "$TRAVIS_OS_NAME" = 'windows' ]; then
     echo "Python installed to: ${pythonInstallationPath}"
     rm pythonInstallerOutput.txt
     # Use an explicit version since choco install doesn't seem to be sufficient
-    # PYTHON="${pythonInstallationPath}/python"
+    PYTHON="${pythonInstallationPath}/python"
     # This doesn't seem to be sufficient either
-    export PATH="${pythonInstallationPath}:${PATH}"
-    PYTHON="python"
+    # export PATH="${pythonInstallationPath}:${PATH}"
+    # PYTHON="python"
+    echo "Path: ${PATH}"
 
     choco install make
 

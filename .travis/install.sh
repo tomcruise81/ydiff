@@ -10,7 +10,7 @@ if [ "$TRAVIS_OS_NAME" = 'windows' ]; then
     # PYTHON="${pythonInstallationPath}/python"
     # This doesn't seem to be sufficient either
     # export PATH="${pythonInstallationPath}:${PATH}"
-    ln -f "${pythonInstallationPath}/python" "/usr/bin/python"
+    ln --symbolic --force "${pythonInstallationPath}/python" "/usr/bin/python"
     PYTHON="python"
 
     choco install make

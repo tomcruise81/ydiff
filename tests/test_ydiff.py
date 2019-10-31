@@ -794,9 +794,9 @@ class MainTest(unittest.TestCase):
 
         cwd = self._cwd
         os.chdir(self._ws)
-        cmd = ('git init; git config user.name me; '
-               'git config user.email me@example.org')
-        subprocess.call(cmd, shell=True, stdout=subprocess.PIPE)
+        cmd = ['git init; git config user.name me; '
+               'git config user.email me@example.org']
+        subprocess.call(cmd, stdout=subprocess.PIPE)
         self._change_file('init')
         os.chdir(cwd)
 

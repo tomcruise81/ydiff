@@ -15,12 +15,11 @@ if [ "$TRAVIS_OS_NAME" = 'windows' ]; then
 
     choco install make
 
-    mkdir temp
-    curl https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/cscope-win32/patchutils-0.3.1.win32rev2-bin.7z -o temp/patchutils.7z
-    7z e -y temp/patchutils.7z -o/usr/bin
-    chmod +x /usr/bin/filterdiff.exe
-    rm -rf temp
-    # export PATH="./bin:${PATH}"
+    mkdir bin
+    curl https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/cscope-win32/patchutils-0.3.1.win32rev2-bin.7z -o bin/patchutils.7z
+    7z e -y bin/patchutils.7z -obin
+    chmod +x bin/filterdiff.exe
+    export PATH="$(pwd)/bin:${PATH}"
 
     curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
     ${PYTHON} get-pip.py

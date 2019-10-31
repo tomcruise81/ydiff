@@ -806,6 +806,8 @@ class MainTest(unittest.TestCase):
     def _change_file(self, text):
         cmd = ['/bin/sh', '-c',
                'cd "%s"; echo "%s" > foo' % (self._posix_ws, text)]
+        sys.stderr.write('\nCalling: ' +
+                         ' '.join(cmd) + '\n')
         subprocess.call(cmd)
 
     def _commit_file(self):

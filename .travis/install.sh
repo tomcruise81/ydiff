@@ -3,7 +3,7 @@
 if [ "$TRAVIS_OS_NAME" = 'windows' ]; then
     # Install some custom requirements on Windows
     choco install python --version="${PYTHON_VERSION}" | tee pythonInstallerOutput.txt
-    pythonInstallationPath=`cat pythonInstallerOutput.txt | grep 'Installed to: ' | awk '{ print $3 }' | sed -E -e "s/^'//" -e "s/'$//" -e 's|^(\w):|/\L\1|' | tr '\\' '/'`
+    pythonInstallationPath=`cat pythonInstallerOutput.txt | grep 'Installed to: ' | awk '{ print $3 }' | sed -E -e "s/^'//" -e "s/'$//" -e 's|^(\w):|/\L\1|' | tr '\\\\' '/'`
     echo "Python installed to: ${pythonInstallationPath}"
     rm pythonInstallerOutput.txt
     # Use an explicit version since choco install doesn't seem to be sufficient

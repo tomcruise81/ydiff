@@ -29,6 +29,11 @@ if [ "$TRAVIS_OS_NAME" = 'windows' ]; then
     ${PYTHON} -m pip install --target=ve virtualenv
     ${PYTHON} "ve/virtualenv.py" "ve/python${PYTHON_VERSION}"
     source "ve/python${PYTHON_VERSION}/Scripts/activate"
+
+    # Determine is /bin/sh exists
+    ls -la /bin/sh
+    ls -la /bin/bash
+    which -a sh
 fi
 
 pip install -r requirements.txt

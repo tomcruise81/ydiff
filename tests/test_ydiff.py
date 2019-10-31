@@ -8,6 +8,7 @@ import unittest
 import tempfile
 import subprocess
 import os
+import shutil
 
 sys.path.insert(0, '')
 import ydiff  # nopep8
@@ -788,33 +789,36 @@ class MainTest(unittest.TestCase):
 
     def setUp(self):
         self._cwd = os.getcwd()
-        self._posix_cwd = self._convert_to_posix_path(self._cwd)
         self._ws = tempfile.mkdtemp(prefix='test_ydiff')
-        self._posix_ws = self._convert_to_posix_path(self._ws)
         self._non_ws = tempfile.mkdtemp(prefix='test_ydiff')
-        self._posix_non_ws = self._convert_to_posix_path(self._non_ws)
-        cmd = ('cd "%s"; git init; git config user.name me; '
-               'git config user.email me@example.org') % self._posix_ws
+
+        cwd = self._cwd
+        os.chdir(self._ws)
+        cmd = ('git init; git config user.name me; '
+               'git config user.email me@example.org')
         subprocess.call(cmd, shell=True, stdout=subprocess.PIPE)
         self._change_file('init')
+        os.chdir(cwd)
 
     def tearDown(self):
         os.chdir(self._cwd)
-        cmd = ['/bin/rm', '-rf', self._posix_ws, self._posix_non_ws]
-        subprocess.call(cmd)
+        shutil.rmtree(self._ws)
+        shutil.rmtree(self._non_ws)
 
     def _change_file(self, text):
-        cmd = ['/bin/sh', '-c',
-               """'cd "%s"; echo "%s" > foo'""" % (self._posix_ws, text)]
-        sys.stderr.write('\nCalling: ' +
-                         ' '.join(cmd) + '\n')
-        subprocess.call(cmd)
+        cwd = self._cwd
+        os.chdir(self._ws)
+        f = open("foo", "w")
+        f.write(text)
+        f.close()
+        os.chdir(cwd)
 
     def _commit_file(self):
-        cmd = ['/bin/sh', '-c',
-               """'cd "%s"; git add foo; git commit foo -m update'"""
-               % self._posix_ws]
+        cwd = self._cwd
+        os.chdir(self._ws)
+        cmd = ['git add foo; git commit foo -m update']
         subprocess.call(cmd, stdout=subprocess.PIPE)
+        os.chdir(cwd)
 
     def test_preset_options(self):
         os.environ['YDIFF_OPTIONS'] = '--help'

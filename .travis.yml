@@ -25,12 +25,12 @@ jobs:
     # - os: windows
     #   language: bash
     #   env: PYTHON_VERSION=3.5.4
-    # - os: windows
-    #   language: bash
-    #   env: PYTHON_VERSION=3.6.8
     - os: windows
       language: bash
-      env: PYTHON_VERSION=3.7.5
+      env: PYTHON_VERSION=3.6.8
+    # - os: windows
+    #   language: bash
+    #   env: PYTHON_VERSION=3.7.5
     # - os: windows
     #   language: bash
     #   env: PYTHON_VERSION=3.8.0

@@ -800,18 +800,18 @@ class MainTest(unittest.TestCase):
 
     def tearDown(self):
         os.chdir(self._cwd)
-        cmd = ['/bin/rm', '-rf', self._posix_ws, self._posix_non_ws]
+        cmd = ['rm', '-rf', self._posix_ws, self._posix_non_ws]
         subprocess.call(cmd)
 
     def _change_file(self, text):
-        cmd = ['/bin/sh', '-c',
+        cmd = ['sh', '-c',
                'cd "%s"; echo "%s" > foo' % (self._posix_ws, text)]
         sys.stderr.write('\nCalling: ' +
                          ' '.join(cmd) + '\n')
         subprocess.call(cmd)
 
     def _commit_file(self):
-        cmd = ['/bin/sh', '-c',
+        cmd = ['sh', '-c',
                'cd "%s"; git add foo; git commit foo -m update'
                % self._posix_ws]
         subprocess.call(cmd, stdout=subprocess.PIPE)

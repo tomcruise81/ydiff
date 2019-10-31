@@ -777,28 +777,41 @@ Added: svn:keywords
 
 class MainTest(unittest.TestCase):
 
+    # Posix paths are necessary in some cases since we're using
+    # *nix commands against the given path
+    def _convert_to_posix_path(self, path):
+        path_parts = os.path.splitdrive(path)
+        if path_parts[0] != "":
+            path = '/%s%s' % (path_parts[0].replace(':', ''), path_parts[1])
+        path = path.replace('\\', '/')
+        return path
+
     def setUp(self):
         self._cwd = os.getcwd()
+        self._posix_cwd = self._convert_to_posix_path(self._cwd)
         self._ws = tempfile.mkdtemp(prefix='test_ydiff')
+        self._posix_ws = self._convert_to_posix_path(self._ws)
         self._non_ws = tempfile.mkdtemp(prefix='test_ydiff')
-        cmd = ('cd %s; git init; git config user.name me; '
-               'git config user.email me@example.org') % self._ws
+        self._posix_non_ws = self._convert_to_posix_path(self._non_ws)
+        cmd = ('cd "%s"; git init; git config user.name me; '
+               'git config user.email me@example.org') % self._posix_ws
         subprocess.call(cmd, shell=True, stdout=subprocess.PIPE)
         self._change_file('init')
 
     def tearDown(self):
         os.chdir(self._cwd)
-        cmd = ['/bin/rm', '-rf', self._ws, self._non_ws]
+        cmd = ['/bin/rm', '-rf', self._posix_ws, self._posix_non_ws]
         subprocess.call(cmd)
 
     def _change_file(self, text):
         cmd = ['/bin/sh', '-c',
-               'cd %s; echo "%s" > foo' % (self._ws, text)]
+               'cd "%s"; echo "%s" > foo' % (self._posix_ws, text)]
         subprocess.call(cmd)
 
     def _commit_file(self):
         cmd = ['/bin/sh', '-c',
-               'cd %s; git add foo; git commit foo -m update' % self._ws]
+               'cd "%s"; git add foo; git commit foo -m update'
+               % self._posix_ws]
         subprocess.call(cmd, stdout=subprocess.PIPE)
 
     def test_preset_options(self):

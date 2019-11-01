@@ -522,6 +522,7 @@ spam
         stream = ydiff.PatchStream(Sequential(items))
         parser = ydiff.DiffParser(stream)
         self.assertEqual(parser._type, 'unified')
+        parser.close()
 
     def test_type_detect_context(self):
         patch = """\
@@ -537,6 +538,7 @@ spam
         stream = ydiff.PatchStream(Sequential(items))
         parser = ydiff.DiffParser(stream)
         self.assertEqual(parser._type, 'context')
+        parser.close()
 
     def test_type_detect_neg(self):
         patch = """\
@@ -550,6 +552,7 @@ spam
         stream = ydiff.PatchStream(Sequential(items))
         parser = ydiff.DiffParser(stream)
         self.assertEqual(parser._type, 'unified')
+        parser.close()
 
     def test_parse_invalid_hunk_meta(self):
         patch = """\
@@ -563,6 +566,7 @@ spam
         stream = ydiff.PatchStream(Sequential(items))
         parser = ydiff.DiffParser(stream)
         self.assertRaises(RuntimeError, list, parser.get_diff_generator())
+        parser.close()
 
     def test_parse_dangling_header(self):
         patch = """\
@@ -585,6 +589,7 @@ spam
         self.assertEqual(out[1]._old_path, '')
         self.assertEqual(out[1]._new_path, '')
         self.assertEqual(len(out[1]._hunks), 0)
+        parser.close()
 
     def test_parse_missing_new_path(self):
         patch = """\
@@ -600,6 +605,7 @@ spam
         stream = ydiff.PatchStream(Sequential(items))
         parser = ydiff.DiffParser(stream)
         self.assertRaises(AssertionError, list, parser.get_diff_generator())
+        parser.close()
 
     def test_parse_missing_hunk_meta(self):
         patch = """\
@@ -622,6 +628,7 @@ spam
         self.assertEqual(out[1]._old_path, '--- c\n')
         self.assertEqual(out[1]._new_path, '+++ d\n')
         self.assertEqual(len(out[1]._hunks), 0)
+        parser.close()
 
     def test_parse_missing_hunk_list(self):
         patch = """\
@@ -639,6 +646,7 @@ spam
         stream = ydiff.PatchStream(Sequential(items))
         parser = ydiff.DiffParser(stream)
         self.assertRaises(AssertionError, list, parser.get_diff_generator())
+        parser.close()
 
     def test_parse_only_in_dir(self):
         patch = """\
@@ -666,6 +674,7 @@ Only in foo: foo
         self.assertEqual(out[1]._headers, ['Only in foo: foo\n'])
         self.assertEqual(len(out[2]._hunks), 1)
         self.assertEqual(len(out[2]._hunks[0]._hunk_list), 3)
+        parser.close()
 
     def test_parse_only_in_dir_at_last(self):
         patch = """\
@@ -685,6 +694,7 @@ Only in foo: foo
         self.assertEqual(len(out), 2)
         self.assertEqual(len(out[1]._hunks), 0)
         self.assertEqual(out[1]._headers, ['Only in foo: foo\n'])
+        parser.close()
 
     def test_parse_binary_differ_diff_ru(self):
         patch = """\
@@ -715,6 +725,7 @@ Binary files a/1.pdf and b/1.pdf differ
         self.assertTrue(out[1]._headers[0].startswith('Binary files'))
         self.assertEqual(len(out[2]._hunks), 1)
         self.assertEqual(len(out[2]._hunks[0]._hunk_list), 3)
+        parser.close()
 
     def test_parse_binary_differ_git(self):
         patch = """\
@@ -751,6 +762,7 @@ index 529e8a3..ad71921 100755
         self.assertTrue(out[1]._headers[2].startswith('Binary files'))
         self.assertEqual(len(out[2]._hunks), 1)
         self.assertEqual(len(out[2]._hunks[0]._hunk_list), 3)
+        parser.close()
 
     def test_parse_svn_prop(self):
         patch = """\
@@ -774,36 +786,22 @@ Added: svn:keywords
         hunk = out[0]._hunks[1]
         self.assertEqual(hunk._hunk_headers, ['Added: svn:keywords\n'])
         self.assertEqual(hunk._hunk_list, [('+', 'Id\n')])
+        parser.close()
 
 
 class MainTest(unittest.TestCase):
-
-    # Posix paths are necessary in some cases since we're using
-    # *nix commands against the given path
-    def _convert_to_posix_path(self, path):
-        path_parts = os.path.splitdrive(path)
-        if path_parts[0] != "":
-            path = '/%s%s' % (path_parts[0].replace(':', ''), path_parts[1])
-        path = path.replace('\\', '/')
-        return path
 
     def setUp(self):
         self._cwd = os.getcwd()
         self._ws = tempfile.mkdtemp(prefix='test_ydiff')
         self._non_ws = tempfile.mkdtemp(prefix='test_ydiff')
 
-        cwd = self._cwd
         os.chdir(self._ws)
-        os.system('git init && '
-                  'git config user.name me && '
-                  'git config user.email me@example.org')
-        # subprocess.call(['git', 'init'], stdout=subprocess.PIPE)
-        # subprocess.call(['git', 'config', 'user.name', 'me'],
-        #                 stdout=subprocess.PIPE)
-        # subprocess.call(['git', 'config', 'user.email', 'me@example.org'],
-        #                 stdout=subprocess.PIPE)
+        subprocess.call(['git', 'init'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        subprocess.call(['git', 'config', 'user.name', 'me'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        subprocess.call(['git', 'config', 'user.email', 'me@example.org'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         self._change_file('init')
-        os.chdir(cwd)
+        os.chdir(self._cwd)
 
     def tearDown(self):
         os.chdir(self._cwd)
@@ -811,19 +809,17 @@ class MainTest(unittest.TestCase):
         shutil.rmtree(self._non_ws)
 
     def _change_file(self, text):
-        cwd = self._cwd
         os.chdir(self._ws)
         f = open("foo", "w")
         f.write(text)
         f.close()
-        os.chdir(cwd)
+        os.chdir(self._cwd)
 
     def _commit_file(self):
-        cwd = self._cwd
         os.chdir(self._ws)
-        cmd = ['git add foo; git commit foo -m update']
-        subprocess.call(cmd, stdout=subprocess.PIPE)
-        os.chdir(cwd)
+        subprocess.call(['git', 'add', 'foo'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        subprocess.call(['git', 'commit', 'foo', '-m', 'update'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        os.chdir(self._cwd)
 
     def test_preset_options(self):
         os.environ['YDIFF_OPTIONS'] = '--help'

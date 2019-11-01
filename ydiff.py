@@ -94,14 +94,14 @@ def revision_control_probe():
 def revision_control_diff(vcs_name, args):
     """Return diff from revision control system."""
     cmd = VCS_INFO[vcs_name]['diff']
-    return subprocess.Popen(cmd + args, stdout=subprocess.PIPE).stdout
+    return subprocess.Popen(cmd + args, stdout=subprocess.PIPE)
 
 
 def revision_control_log(vcs_name, args):
     """Return log from revision control system or None."""
     cmd = VCS_INFO[vcs_name].get('log')
     if cmd is not None:
-        return subprocess.Popen(cmd + args, stdout=subprocess.PIPE).stdout
+        return subprocess.Popen(cmd + args, stdout=subprocess.PIPE)
 
 
 def colorize(text, start_color, end_color='reset'):
@@ -405,6 +405,19 @@ class DiffParser(object):
             sys.stderr.write("*** unknown format, fall through to 'unified'\n")
             self._type = 'unified'
             self._stream = stream
+
+    def close(self):
+        if hasattr(self, '_translator') and self._translator.returncode is None:
+            if (self._translator.stdin is not None and
+                self._translator.stdin is not sys.stdin):
+                    self._translator.stdin.close()
+            if (self._translator.stdout is not None and
+                self._translator.stdout is not sys.stdout):
+                    self._translator.stdout.close()
+            if (self._translator.stderr is not None and
+                self._translator.stderr is not sys.stderr):
+                    self._translator.stderr.close()
+            self._translator.terminate()
 
     def get_diff_generator(self):
         """parse all diff lines, construct a list of UnifiedDiff objects"""
@@ -750,7 +763,8 @@ def markup_to_pager(stream, opts):
     pager = subprocess.Popen(
         pager_cmd, stdin=subprocess.PIPE, stdout=sys.stdout)
 
-    diffs = DiffParser(stream).get_diff_generator()
+    diffs_parser = DiffParser(stream)
+    diffs = diffsParser.get_diff_generator()
     for diff in diffs:
         marker = DiffMarker(side_by_side=opts.side_by_side, width=opts.width,
                             tab_width=opts.tab_width, wrap=opts.wrap)
@@ -760,6 +774,7 @@ def markup_to_pager(stream, opts):
 
     pager.stdin.close()
     pager.wait()
+    diffs_parser.close()
 
 
 def check_command_status(arguments):
@@ -904,35 +919,41 @@ def main():
             return 1
 
         if opts.log:
-            diff_hdl = revision_control_log(vcs_name, args)
+            diff_hdl_proc = revision_control_log(vcs_name, args)
+            diff_hdl = diff_hdl_proc.stdout
             if diff_hdl is None:
                 sys.stderr.write('*** %s does not support log command.\n' %
                                  vcs_name)
+                diff_hdl_proc.stop()
                 return 1
         else:
             # 'diff' is a must have feature.
-            diff_hdl = revision_control_diff(vcs_name, args)
+            diff_hdl_proc = revision_control_diff(vcs_name, args)
+            diff_hdl = diff_hdl = diff_hdl_proc.stdout
 
     stream = PatchStream(diff_hdl)
 
-    # Don't let empty diff pass thru
-    if stream.is_empty():
+    try:
+        # Don't let empty diff pass thru
+        if stream.is_empty():
+            return 0
+
+        if (opts.color == 'always' or
+                (opts.color == 'auto' and sys.stdout.isatty())):
+            markup_to_pager(stream, opts)
+        else:
+            # pipe out stream untouched to make sure it is still a patch
+            byte_output = (sys.stdout.buffer if hasattr(sys.stdout, 'buffer')
+                        else sys.stdout)
+            for line in stream:
+                byte_output.write(line)
+
         return 0
-
-    if (opts.color == 'always' or
-            (opts.color == 'auto' and sys.stdout.isatty())):
-        markup_to_pager(stream, opts)
-    else:
-        # pipe out stream untouched to make sure it is still a patch
-        byte_output = (sys.stdout.buffer if hasattr(sys.stdout, 'buffer')
-                       else sys.stdout)
-        for line in stream:
-            byte_output.write(line)
-
-    if diff_hdl is not sys.stdin:
-        diff_hdl.close()
-
-    return 0
+    finally:
+        if (diff_hdl_proc is not None) and (diff_hdl_proc.returncode is None):
+            diff_hdl_proc.terminate()
+        if diff_hdl is not sys.stdin:
+            diff_hdl.close()
 
 
 if __name__ == '__main__':

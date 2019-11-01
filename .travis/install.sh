@@ -11,7 +11,6 @@ if [ "$TRAVIS_OS_NAME" = 'windows' ]; then
     # This doesn't seem to be sufficient either
     export PATH="${pythonInstallationPath}:${PATH}"
     # ln --symbolic --force "${pythonInstallationPath}/python" "/usr/bin/python"
-    PYTHON="python"
 
     choco install make
 
@@ -22,11 +21,11 @@ if [ "$TRAVIS_OS_NAME" = 'windows' ]; then
     export PATH="$(pwd)/bin:${PATH}"
 
     curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
-    ${PYTHON} get-pip.py
+    python get-pip.py
     rm -f get-pip.py
 
-    ${PYTHON} -m pip install --target=envs virtualenv
-    ${PYTHON} "envs/virtualenv.py" "envs/python${PYTHON_VERSION}"
+    python -m pip install --target=envs virtualenv
+    python "envs/virtualenv.py" "envs/python${PYTHON_VERSION}"
     source "envs/python${PYTHON_VERSION}/Scripts/activate"
 
     # # Determine is /bin/sh exists

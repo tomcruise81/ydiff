@@ -8,4 +8,8 @@ if [ "$TRAVIS_OS_NAME" = 'windows' ]; then
     export PATH="$(pwd)/bin:${PATH}"
 fi
 
-make test
+if [[ "${PYTHON_VERSION}" == 3* ]]; then
+    PYTHON=python3 make test3
+else
+    make test
+fi

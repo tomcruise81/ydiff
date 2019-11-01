@@ -407,16 +407,25 @@ class DiffParser(object):
             self._stream = stream
 
     def close(self):
-        if hasattr(self, '_translator') and self._translator.returncode is None:
-            if (self._translator.stdin is not None and
-                self._translator.stdin is not sys.stdin):
+        if (
+            hasattr(self, '_translator') and
+            self._translator.returncode is None
+        ):
+            if (
+                self._translator.stdin is not None and
+                self._translator.stdin is not sys.stdin
+            ):
                     self._translator.stdin.close()
-            if (self._translator.stdout is not None and
-                self._translator.stdout is not sys.stdout):
-                    self._translator.stdout.close()
-            if (self._translator.stderr is not None and
-                self._translator.stderr is not sys.stderr):
-                    self._translator.stderr.close()
+            if (
+                self._translator.stdout is not None and
+                self._translator.stdout is not sys.stdout
+            ):
+                self._translator.stdout.close()
+            if (
+                self._translator.stderr is not None and
+                self._translator.stderr is not sys.stderr
+            ):
+                self._translator.stderr.close()
             self._translator.terminate()
 
     def get_diff_generator(self):
@@ -944,17 +953,16 @@ def main():
         else:
             # pipe out stream untouched to make sure it is still a patch
             byte_output = (sys.stdout.buffer if hasattr(sys.stdout, 'buffer')
-                        else sys.stdout)
+                           else sys.stdout)
             for line in stream:
                 byte_output.write(line)
 
         return 0
     finally:
-        if (diff_hdl_proc is not None) and (diff_hdl_proc.returncode is None):
-            diff_hdl_proc.terminate()
-        if diff_hdl is not sys.stdin:
+        if diff_hdl is not sys.stdin and diff_hdl is not sys.stdout:
             diff_hdl.close()
-
+    # if (diff_hdl_proc is not None) and (diff_hdl_proc.returncode is None):
+    #     diff_hdl_proc.terminate()
 
 if __name__ == '__main__':
     sys.exit(main())

@@ -797,9 +797,12 @@ class MainTest(unittest.TestCase):
         self._non_ws = tempfile.mkdtemp(prefix='test_ydiff')
 
         os.chdir(self._ws)
-        subprocess.call(['git', 'init'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        subprocess.call(['git', 'config', 'user.name', 'me'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        subprocess.call(['git', 'config', 'user.email', 'me@example.org'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        subprocess.call(['git', 'init'],
+                        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        subprocess.call(['git', 'config', 'user.name', 'me'],
+                        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        subprocess.call(['git', 'config', 'user.email', 'me@example.org'],
+                        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         self._change_file('init')
         os.chdir(self._cwd)
 
@@ -817,8 +820,10 @@ class MainTest(unittest.TestCase):
 
     def _commit_file(self):
         os.chdir(self._ws)
-        subprocess.call(['git', 'add', 'foo'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        subprocess.call(['git', 'commit', 'foo', '-m', 'update'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        subprocess.call(['git', 'add', 'foo'],
+                        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        subprocess.call(['git', 'commit', 'foo', '-m', 'update'],
+                        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         os.chdir(self._cwd)
 
     def test_preset_options(self):

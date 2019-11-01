@@ -773,7 +773,7 @@ def markup_to_pager(stream, opts):
         pager_cmd, stdin=subprocess.PIPE, stdout=sys.stdout)
 
     diffs_parser = DiffParser(stream)
-    diffs = diffsParser.get_diff_generator()
+    diffs = diffs_parser.get_diff_generator()
     for diff in diffs:
         marker = DiffMarker(side_by_side=opts.side_by_side, width=opts.width,
                             tab_width=opts.tab_width, wrap=opts.wrap)

@@ -794,14 +794,14 @@ class MainTest(unittest.TestCase):
 
         cwd = self._cwd
         os.chdir(self._ws)
-        # os.system('git init && '
-        #           'git config user.name me && '
-        #           'git config user.email me@example.org')
-        subprocess.call(['git', 'init'], stdout=subprocess.PIPE)
-        subprocess.call(['git', 'config', 'user.name', 'me'],
-                        stdout=subprocess.PIPE)
-        subprocess.call(['git', 'config', 'user.email', 'me@example.org'],
-                        stdout=subprocess.PIPE)
+        os.system('git init && '
+                  'git config user.name me && '
+                  'git config user.email me@example.org')
+        # subprocess.call(['git', 'init'], stdout=subprocess.PIPE)
+        # subprocess.call(['git', 'config', 'user.name', 'me'],
+        #                 stdout=subprocess.PIPE)
+        # subprocess.call(['git', 'config', 'user.email', 'me@example.org'],
+        #                 stdout=subprocess.PIPE)
         self._change_file('init')
         os.chdir(cwd)
 

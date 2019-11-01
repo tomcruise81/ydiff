@@ -24,15 +24,15 @@ doc-preview:
 
 test: lint doc-check cov reg
 
-test3: lint doc-check cov3 reg3
+test3: lint doc-check cov reg3
 
 cov:
 	coverage run tests/test_ydiff.py
 	coverage report --show-missing
 
-cov3:
-	python3 `which coverage` run tests/test_ydiff.py
-	python3 `which coverage` report --show-missing
+# cov3:
+# 	python3 `which coverage` run tests/test_ydiff.py
+# 	python3 `which coverage` report --show-missing
 
 html:
 	coverage html
